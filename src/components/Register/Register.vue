@@ -187,17 +187,30 @@ export default {
 	async getAddress() {
 		if (!this.validationCep && this.address.cep.length) {
 			this.isBusy = true;
-			try {
-				this.isBusy = true;
-				const { data } = await axios.get(`https://viacep.com.br/ws/${this.address.cep.replace('-', '')}/json/`);
+			this.isBusy = true;
+			const { data } = await axios.get(`https://viacep.com.br/ws/${this.address.cep.replace('-', '')}/json/`);
+			if (data.erro) {
+				this.makeToast(
+					"danger",
+					'CEP invalido',
+					"Falha na pesquisa por CEP",
+				);
+			} else {
 				this.address = data;
-				this.address.uf = data.uf.split()
-			} catch (error) {
-				console.log(error);
+				this.address.uf = data.uf?.split();
+				this.isBusy = false;
 			}
 			this.isBusy = false;
 		}
 	},
+	makeToast(variant, text, title) {
+      this.$bvToast.toast(text, {
+        title: title,
+		text: text,
+        variant: variant,
+        solid: true,
+      });
+    },
 	InitiateCheckout() {
 		console.log('InitiateCheckout');
 		this.AddToCart();
