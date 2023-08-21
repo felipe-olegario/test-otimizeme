@@ -46,13 +46,17 @@
 				</b-col>
 			</b-row>
 			<b-row>
-				<b-col cols="8">
+				<b-col cols="7">
 					<b-form-input placeholder="Digite seu CEP" v-mask="'#####-###'" v-model="address.cep"/>
 					<b-form-invalid-feedback :state="!validationCep">
 						CEP invalido
 					</b-form-invalid-feedback>
 				</b-col>
-				<b-button class="max-height-button" @click="getAddress">Pesquisar Endereço</b-button>
+				<b-col cols="5">
+					<b-button class="max-height-button" @click="getAddress">
+						<b-spinner v-if="isBusy" small type="grow"></b-spinner> Pesquisar Endereço
+					</b-button>
+				</b-col>
 			</b-row>
 		</b-col>
 		<b-col>
@@ -132,6 +136,7 @@ export default {
   data() {
     return {
 		selected: 'SP',
+		isBusy: false
     };
   },
   watch: {
@@ -180,10 +185,17 @@ export default {
   },
   methods: {
 	async getAddress() {
-		if (!this.validationCep) {
-			const { data } = await axios.get(`https://viacep.com.br/ws/${this.address.cep.replace('-', '')}/json/`);
-			this.address = data;
-			this.address.uf = data.uf.split()
+		if (!this.validationCep && this.address.cep.length) {
+			this.isBusy = true;
+			try {
+				this.isBusy = true;
+				const { data } = await axios.get(`https://viacep.com.br/ws/${this.address.cep.replace('-', '')}/json/`);
+				this.address = data;
+				this.address.uf = data.uf.split()
+			} catch (error) {
+				console.log(error);
+			}
+			this.isBusy = false;
 		}
 	},
 	InitiateCheckout() {
